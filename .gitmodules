@@ -1,0 +1,3 @@
+[submodule "graphs/vis-network"]
+	path = graphs/vis-network
+	url = https://github.com/visjs/vis-network.git

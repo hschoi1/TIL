@@ -1,0 +1,39 @@
+This is a summary of https://www.qubole.com/blog/hive-best-practices/, "10 best practices for apache hive"
+
+1. Partitioning Tables
+2. De-normalizing data
+3. Compress Map/Reduce output
+Compression reduces the intermediate data volume, thus reducing the amount of data transfers between mappers and reducers.
+Compression can be applied on the mapper and reducer output individually
+A compressed file size should be less than a few hundred megabytes.
+Otherwise, it may lead to an imbalanced job. 
+
+4. Map Join
+Map joins are efficient if a table on one side of a join is small enough to fit in the memory 
+
+5. Bucketing
+Improves the join performance if the bucket key and join keys are common.
+It reduces the I/O scans during the join process if the process is happening on the same keys 
+
+6. Input Format Selection
+Columnar input formats like RCFile, ORC etc allow you to reduce the read operations by allowing each column to be accessed individually.
+Other binary formats like Avro, sequence files, Thirft and ProtoBuf can be helpful too
+
+7. Parallel execution
+Single, complex hive queries commonly are translated to a number of MapRed jobs that are executed by default sequencing.
+Some of a query's MR stages are not interdependent and could be executed in parallel.
+They can take advantage of spare capacity on a cluster and improve cluster utilization.
+
+8. Vetorization
+process a batch of rows together instead of processing one row at a time.
+Operations are performed on the entire column vector, improving the instruction pipelines and cache usage.
+
+9.Unit Testing 
+In Hive, you can unit test UDFs, SerDes, streaming scripts, Hive queries and more.
+It is possible to verify a whole HiveQL query by without even touching a Hadoop cluster.
+HiveRunner, Hive_test & Beetest are some of these tools.
+
+10.Sampling
+Hive offers a built-in TABLESAMPLE clause. TABLESAMPLE can sample at various granularity levels
+I can return only subsets of buckets(bucket sampling), or HDFS blocks(block sampling), or 
+only first N records from each input split. 

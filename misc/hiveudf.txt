@@ -1,0 +1,47 @@
+//*example from "Programming Hive" by E. Capriolo, D. Wamlpler, J. Rutherglen, 2012
+//p166, A UDF for Finding a Zodiac Sign from a Day
+
+import java.util.Date;
+import java.text.SimpleDateFormat;
+import org.apache.hadoop.hive.ql.exec.UDF;
+
+public class UDFZodiacSign extends UDF{
+    private SimpleDateFormat df;
+
+    public UDFZodiacSign(){
+        df = new SimpleDataFormat("MM-dd-yyyy");
+    }
+    public String evaluate(Date bday){
+        return this.evaluate(bday.getMonth(), bday.getDay());
+    }
+
+    public String evaluate(String bday){
+        Date date = null;
+        try{
+            date = df.parse(bday);
+        } catch (Exception ex) {
+            return null;
+        }
+        return this.evaluate(date.getMonth()+1, date.getDay());
+    }
+    public String evaluate(Integer month, Integer day){
+        if (month==1) {
+            if (day < 20){
+                return "Capricorn";
+            } else{
+                return "Aquarius";
+            }   
+        }
+        ...
+        return null;
+    }
+}
+/*
+extend the UDF class and imprements and the evaluat() function
+During query processing, an instance of the class is instantiated for each use of the function in a query
+
+Overloading the evaluate method is ok. Hive will pick the method that matches in a similar way to Java's
+
+The arguments and return types of the UDF's evaluate() function can only be types that Hive can serialize.
+
+*/

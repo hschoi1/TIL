@@ -1,0 +1,23 @@
+//p442
+doctype 
+html 
+  head 
+    meta(charset='utf-8')
+    title abc 
+  body 
+    div F12를 눌러 console 탭과 network 탭을 확인하세요
+    script(src='/socket.io/socket.io.js') // 이 스크립트를 통해 서버와 유사한 API로 웹 소켓 통신 가능. 
+
+    script.
+      var socket =  io.connect('http://localhost:8005', {
+        path: '/socket.io'
+      });
+      socket.on('news', function(data){ 
+        //서버에서 보내는 new이벤트를 받기 위해 new이벤트 리스너 있음.
+        // news이벤트가 발생하면 emit 메서드로 다시 서버에게 답장을 함.서버의 reply 이벤트 리스너로 답장이 감.
+          console.log(data);
+          socket.emit('reply', 'Hello Node.JS');
+      });
+
+//Socket.IO는 먼저 폴링 방식으로 서버와 연결 -> http프로토콜 사용
+//폴링 연결 후, 웹 소켓을 사용할 수 있다면 웹 소켓으로 업그레이드.

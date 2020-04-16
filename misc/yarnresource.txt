@@ -1,0 +1,47 @@
+some calculations from https://mapr.com/blog/best-practices-yarn-resource-management/
+1.how does warden calculate and allocate resources to yarn 
+yarn can manage memory, CPU and disks. 
+2. minimum and maximum allocation unit in yarn
+RM can only allocate memory to containers in multiples of yarn.scheduler.minimum-allocation-mb 
+and not exceed yarn.scheduler.maximum-allocation-mb
+if yarn.schedular.minimum-allocation-mb =1024
+and one job has set mapreduce.map.memory.mb=1025,
+RM will give it 2048 MB(2*yarn.scheduler.minimum-allocation-mb) container.
+3.virtual/physical memory checker
+If the container's virtual memory exceeds
+yarn.nodemanager.vmem-pmem-ratio*mapreduce.reduce(or map).memory.mb,
+the container is killed if yarn.nodemanager.vmem-check-enabled is true
+If the physical memory exceeds mapreduce.reduce(map).memory.mb,
+the container is killed if yarn.nodemanager.pmem-check-enabled is true
+
+It is possible that the MR job has memory leaking or the memory for each container is not enough
+
+4. Mapper, Reducer, and AM's resource request 
+MR v2 job has 3 diff container types - mapper, reducer and AM
+Mapper and Reducer can ask for memory, CPU and disk
+each container is a JVM process. set -Xmx of java opts to 0.8 * container mem allocation
+AM can only ask for memory and CPU.
+There are many factors which can affect the mem requirement for each container.
+1. number of mappers/reducers 
+2. file type(plain txt file, parquet, ORC)
+3. data compression algorithm 
+4. type of operation(sort, group by, aggregation, join)
+5. data skew 
+etc 
+ex)
+1. If the MR job sorts parquet files, Mapper caches the whole Parquet row group in mem.
+The mapper mem should be large enough here.
+2. AM running out of mem. If the job writes lots of parquet files, during commit phase of the job,
+AM will call ParquetOutputCommitter.commitJob()
+Here increase the mem requirement for AM and set parquet.enable.summary-metadata to false.
+
+We need to balance the job performance and resource capacity
+Jobs doing soriting may need a larger mapreduce.task.io.sort.mb to avoid or reduce the # of spilling files.
+If the system has enough mem cap, increase mapreduce.task.io.sort.mb and container mem to get better job performance
+
+If OOM happens, check AM logs to find out which container
+
+5.Bottleneck resource 
+different containers from different jobs ask for different amount of resources.
+you can prob. allocate the leftover resources to jobs which can improve performance with it.
+ex) you can allocate more memory to sorting jobs which used to spill to disk

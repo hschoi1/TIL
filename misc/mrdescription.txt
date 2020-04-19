@@ -1,0 +1,47 @@
+some useful info from someone's description of mr tasks: https://0x0fff.com/hadoop-mapreduce-comprehensive-description/
+
+Each mapper processes a single input split (gzip archive is not splittable).
+After partitioning, the output is written to the circular buffer in memory.
+mapreduce.task.io.sort.mb is the total amt of mem allowed for the map output to occupy
+If over this amt, the data would be spilled to the disk. 
+If dfs.blocksize changes from 64mb to 128mb, even the simplest identity mapper will spill to disk, 
+as map output buffer by default is smaller than the input split size
+
+After the sorting, combiner is invoked to reduce the amt of data written to the disc. 
+
+If the size of a single record produced by mapper is greater than the output beffer size, 
+the record would be written directly to the disk without combiner and sorter.
+
+When both mapper and the last spilling is finished,the spill thread is terminated 
+and the merge phase starts.
+During the merge, all the spill files should be gropued together to form a single map output file. 
+(set by mapreduce.task.io.sort.factor. 
+By default a single merge process can process up to 100 spill files)
+
+During the merge, if the amt of files being merged >= min.num.spills.for.combine (3 by default),
+then the combiner would be executed before writing it to the disk
+
+**The result of the map task is a single file containing all the output data of the mapper 
+
+Now the ReduceTask
+The first thing on the the reduce side is starting the "Event Fetcher" thread,
+which polls the am for the status fo the mappers and listening to the events of mapper execution finish.
+The amt of fetcher threads is set by mapred.reduce.parallel.copies
+(by default, 5, meaning that a single reduce task might have 5 threads copying data from the mappers in parallel)
+The fetch is performed using HTTP/HTTPS protocol
+
+All the fetched data from the mapper side is stored in memory. 
+The amt of mem allocated for this is set by mapreduce.reduce.shuffle.input.buffer.percent 
+The total amt of map outputs a single reducer can store in mem is mapreduce.reduce.shuffle.input.buffer.percent*mapreduce.reduce.memory.totalbytes
+
+There are 3 types of mergers
+1. InMemory: triggered when mem buffer occupied by the maptask outputs fetched by this task reaches reduce.shuffle.merge.percent.
+Executes combiner after the merge. The output is written to the disk 
+2. MemToMem: merges the mapper outputs locaed in the memory and writes the output back to the mems
+Triggered when the amt of distinct maptask outputs reaches mapreduce.reduce.merge.memtomem.threshold 
+3. OnDisk: merges the files locaed on the disks, triggered when the amt of files increases 2*task.io.sort.factor-1 
+but does not merge more than mapreduce.task.io.sort.factor files in a single run.
+
+Then there is finalMerge.
+The output is split btw RAM and the disks. The amt of RAM allowed as a reducer input is mapred.job.reduce.markreset.buffer.percent 
+of the total reducer heapsize

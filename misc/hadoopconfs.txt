@@ -1,0 +1,81 @@
+https://bloodguy.tistory.com/entry/Hadoop-MapReduce-%ED%8A%9C%EB%8B%9D
+에서 추릴만한 정보 list up
+현재와 버전과 환경이 다르지만 어떤 conf들이 있는지 보는 용도.
+
+1. blocksize
+실행시간이 줄었음
+dfs.blocksize를 바꾸거나 mapred.min.split.size를 조절 
+필자는 후자만 조절했다고 함. 낮은 blocksize에선 input split수 높음 -> map task 수 높아서  과도한 map task 재실행으로 퍼포먼스 손실이 있었다.
+
+
+2.M/R task수 
+필자가 말하길 값을 잘 설정하면 성능이 나아기는 경우 < 잘못설정해서 성능 저하될 가능성 
+
+
+
+mapred.tasktracker.map.tasks.maximum
+- 하나의 tasktracker에서 동시 실행가능한 최대 map task 수 (default= 2)
+mapred.tasktracker.reduce.tasks.maximum
+- 하나의 tasktracker에서 동시 실행가능한 최대 redyce task 수 (default= 2)
+mapred.reduce.tasks 
+-job 당 실행할 전체 reduce task 수 (default=1)
+
+위 첫 두개의 설정은 노드 하나에서 동시에 실행될 M/R task의 수 
+해당 노드의 CPU, RAM에 맞춰서 노드마다 mapred-site.xml에서 따로 설정해야함
+노드별 m/r 적정수를 계산하는 공식은 작업의 성격에 따라 다름
+예시로, 
+-CPU코어수에 맞춰 task수를 지정했는데 RAM이 너무 작으면 swap이 많이 일어나서 RAM이 병목
+-RAM에 맞춰 task수를 지정했는데 CPU코어수가 너무 작으면, Context Switching이 병목
+그래도 대략적으론 (0.95~1.75) * (CPU코어수 -1)
+
+3.Shuffle
+Spill 단계에서 Disk I/O, 각 단계별 결과데이터가 Network로 주고받기 땜에 병목 문제
+필자의 경험으론 여기서 튜닝한다고 큰 성과 없었다고 함.
+
+io.sort.mb 
+-임계점에 도달하면 Spill이 일어나고 Disk I/O가 발생하여 성능이 떨어지므로 높이길 권장 (default=100)
+io.sort.factor
+-한 번에 병합할 stream의 수 (default=10)
+tasktracker.http.threads
+-map output을 reducer에 전달하는 thread수(default=40)
+-개별 job마다 설정하는 것은 불가능
+mapred.reduce.parallel.copies
+-copy단계에서 데이터를 병렬로 전송할 thread수 (default=5)
+-필자는 이 값을 높여서 성능이 나아지는 느낌을 받았다고
+mapred.job.shuffle.input.buffer.percent
+-shuffle단계에서 map output 보관에 필요한 메모리를 전체 heap size의 비율로 설정(default=0.7)
+mapred.job.shuffle.merge.percent
+-reducer가 shuffle 결과를 받아 버퍼에 저장하다가 파일로 저장하는 임계 백분율(default=0.66)
+mapred.inmem.merge.threshold 
+-reducer가 shuffle 결과를 받아 버퍼에 저장하다가 파일로 저장하는 임계값 (default=1000)
+mapred.job.reduce.input.buffer.percent 
+-reduce 단계에서 map output을 보관하기 위해 사용하는 메모리크기를 max heap size의 백분율로(default=0.0) 
+
+
+4.Memory
+mapred.child.java.opts 로 tasktracker에서 실행하는 child process 에 적용할 java options 지정가능 
+max heap size를 지정하는데 사용(default=-Xmx200m)
+
+ 예시:
+ 노드의 RAM=8G, 노드에는 DN, TaskTracker프로세스가 각각 실행중 
+ DN과 TaskTrack는 각각 -Xmx1000m으로 총 1G씩 총 2G를 잡고 시작하므로 가용 RAM=6G
+ 이 6G 를 지정된 m/r task 수로 나눔 각각 7개라면 6G/14 = 0.43G
+ OS나 다른곳에서 사용할 RAM까지 생각하면 대략 task당 400M이 적정수치
+GC로그도 특정 파일에 저장할 수 있다
+
+5.기타
+io.file.buffer.size 
+-R/W에 적용할 버퍼 사이즈 지정(default=4k)
+-필자는 성능향상엔 그닥 도움안되는것 같다고 함
+
+mapred.job.reuse.jvm.num.tasks 
+-하나의 jvm에서 실행시킬 task의 수 (default=1)
+-이것도 성능향상 그닥인 듯하다고.
+
+dfs.namenode.handler.count
+-namenode의 서버 thread 수(default=10)
+-어케tune할지는 잘 모르겠으나 NN서버의 자원이 넉넉하면 여기저기서 64로 해놓고 쓴다고
+
+dfs.datanode.handler.count 
+-datanode의 서버 thread 수(default=10)
+-이론적으로 RPC handler수인데, 실제 R/W 는 RPC가 아닌 DataTransferProtocol을 이용하기때문에 그닥이라는 의견이 있다고

@@ -1,0 +1,70 @@
+Spark The Definitive Guide 6.11 사용자 정의 함수 정리
+
+기본적으로는 특정 SparkSession이나 Context에서 사용할 수 있도록 임시 함수 형태로 등록됨
+스칼라, 파이썬, 자바로 UDF를 개발 가능, but 성능차이 존재할 수 있음
+
+스칼라코드
+val udfExampleDF = spark.range(5).toDF("num")
+def power3(number:Double): Double = number * number * number  
+power3(2.0)
+
+파이썬코드 예시 
+udfExampleDF = spark.range(5).toDF("num)
+def power3(double_value):
+   return double_value ** 3 
+power3(2.0)
+
+위의 예제에서 입력값을 제한할 수 있다(특정 데이터 타입으로 강제하고 null값을 입력하지 못하게)
+
+모든 워커 노드에서 생성된 함수를 사용할 수 있도록 스파크에 등록해야함.
+스파크는 드라이버에서 함수를 직렬화하고 네트워크를 통해 모든 익스큐터 프로세스로 전달함.
+
+스칼라나 자바로 udf작성했다면 JVM환경에서만 사용 가능. 
+따라서 스파크 내장함수가 제공하는 코드 생성 기능의 장점 활용X -> 약간의 성능 저하
+객체를 많이 생성/사용해도 성능 문제 
+
+파이썬으로 udf 작성했다면, 스파크는 워커 노드에 파이썬 프로세스를 실행하고
+파이썬이 이해할 수 있는 포맷으로 데이터를 직렬화함. 그리고 데이터 로우마다 함수를 질행하고
+마지막으로 JVM과 스파크에 처리 결과를 반환.
+
+자바나 스칼라로 사용자 정의 함수를 작성하는 것이 좋다. 파이썬으로 한다면
+1. 직렬화에 큰 부하(파이썬으로 데이터를 전달하기 위해)
+2. 데이터가 파이썬으로 전달되면 스파크에서 워커 메모리를 관리할 수 없음
+JVM과 파이썬이 동일한 머신에서 메모리 경합을 하면 자원에 제약이 생겨 워커가 비정상적으로 종료될 가능성 있음
+
+DF에서 사용할 수 있도록 udf등록 
+//스칼라
+import org.apache.spark.sql.functions.udf 
+val power3udf = udf(power3(_:Double):Double)
+udfExampleDF.select(power3udf(col("num"))).show()
+
+//파이썬 
+from pyspark.sql.functions import udf 
+power3udf = udf(power3)
+이후에 다음 사용가능
+from pyspark.sql.functions import col
+udfExampleDF.select(power3udf(col("num))).show(2)
+
+udf를 스파크 sql함수로 등록하면 DF에서만 말고도 모든 프로그래밍 언어와 sql에서 udf를 사용할 수 있음
+//스칼라
+spark.udf.register("power3", power3(_:Double):Double)
+udfExampleDF.selectExpr("power3(num)").show(2)
+
+//파이썬
+udfExampleDF.select("power3(num)").show(2)
+
+덤:
+함수를 정의할 때 반환타입을 지정하는 것이 좋음
+함수에서 반환될 실제 데이터 타입과 일치하지 않는 데이터 타입을 지정하면 스파크는 null을 반환함.
+
+위의 예시: 
+from pyspark.sql.types import IntegerType, DoubleType
+spark.udf.register("power3py", power3, DoubleType())
+
+udfExampleDF.selectExpr("power3py(num)").show(2) 
+--> range가 Integer 데이터 타입 데이터를 만들기 땜에 null값이 반환됨.
+
+sql에서도 등록된 udf 사용가능
+SELECT power3(12), power3py(12) --위의 데이터타입 이슈로 동작은 하지않음
+
+udf에서 값을 선택적으로 반환하려면 파이썬은 None, 스칼라는 Option타입을 반환해야 함.

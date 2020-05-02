@@ -1,0 +1,44 @@
+Spark The Definitive Guide 
+
+15.3 스파크 애플리케이션의 생애주기(스파크 내부)
+스파크 애플리케이션은 하나 이상의 스파크 잡으로 구성.
+스파크 잡은 차례로 실행됨 (스레드를 사용해 여러 액션을 병렬로 수행하는 경우가 아니라면)
+
+15.3.1 
+SparkSession
+모든 스파크 애플리케이션은 가장 먼저 SparkSession 생성
+SparkSession의 빌더 메서드를 사용해 생성할 것을 추천
+스파크와 스파크SQL 컨텍스트를 new SparkContext 패턴을 사용해서 만드는 것보다 안전하게 생성 가능
+다수의 라이브러리가 세션을 생성하려는 상황에서 컨텍스트 충돌을 방지
+
+//scala
+import org.apache.spark.sql.SparkSession
+
+val spark = SparkSession.builder().appName("~")
+   .config("spark.sql.warehouse.dir", "/user/hive/warehouse")
+   .getOrCreate()
+
+#python
+from pyspark.sql import SparkSession 
+
+spark = SparkSession.builder.master("local").appName("Word Count")\
+   .config("spark.some.config.option", "some-value")\
+   .getOrCreate()
+
+SparkSession를 사용해 모든 저수준 API, 기존 컨텍스트 그리고 관련 설정 정보에 접근 가능.
+
+
+SparkContext
+SparkSession의 SparkContext는 스파크 클러스트에 대한 연결
+SparkContext를 이용해 스파크 저수준 API, 어큐뮬레이터 그리고 브로드캐스트 변수를 생성하고 코드를 실행할 수 있음 
+대부분의 경우 SparkSession으로 SparkContext에 접근할 수 있으므로, 명시적으로 SparkContext를 초기화할 필요 없음
+
+
+SparkSession, SQLContext 그리고 HiveContext
+1.x 스파크에선 SQLContext와 HiveContext를 사용해 DataFrame과 스파크SQL를 다루었음
+(일반적으로 sqlContext라는 변수명을 사용)
+스파크 1.x에서는 두 가지 SparkContext와 SQLContext 컨텍스트를 사용:
+SparkContext는 스파크의 핵심 추상화 개념을 다루는데 중점
+SQLContext는 스파크 SQL과 같은 고수준 API 기능을 다루는 데 중점 
+스파크 2.x 에서는 SparkSession으로 단일화 함
+SparkContext와 SQLContext는 사용할 일이 거의 없지만 여전히 존재하며 SparkSession으로 접근 가능.

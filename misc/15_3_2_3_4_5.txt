@@ -1,0 +1,80 @@
+Spark The Definitive Guide 
+
+15.3.2 논리적 명령 
+스파크 코드는 트랜스포메이션과 액션으로 구성 
+
+
+#python 예제
+df1 = spark.range(2, 10000000, 2)
+df2 = spark.range(2, 10000000, 4)
+step1 = df1.repartition(5)
+step12 = df2.repartition(6)
+step2 = step1.selectExpr("id * 5 as id")
+step3 = step2.join(step12, ["id"])
+step4 = step3.selectExpr("sum(id)")
+
+step4.collect()
+
+
+step4.explain()
+== Physical Plan == 
+*HashAggregate(keys=[], functions=[sum(id#15L)])
++- Exchange SinglePartition
+  +- *HashAggregate(keys=[], functions=[partial_sum(id#15L)])
+     +- *Proejct [id#15L]
+        +- *SortMergeJoin [id#15L], [id#10L]], Inner 
+           :- *Sort [id#15L ASC NULLS FIRST], false, 0
+           :  +- Exchange hashpartitioning(id#idL, 200)
+           :     +- Proejct [(id#7L * 5) AS id#15L]
+           :        +- Exchange RoundRobinPartitioning(5)
+           :            +- *Range(2, 10000000, step=2, splits=8)
+           +- *Sort [id#10L ASC NULLS FIRST], false, 0
+              +- Exchange hashpartitioning(id#idL, 200)
+                  +- Exchange RoundRobinPartitioning(6)
+                     +- *Range(2, 10000000, step=4, splits=8)
+ 
+
+15.3.3 스파크 잡 
+
+보통 액션 하나당 하나의 스파크 잡 생성 
+스파크 잡의 스테이지 수는 셔플 작업이 얼마나 많이 발생하는지에 따라 달라짐
+위의 예제에서는 태스크 갯수가 다음과 같음
+Stage1: 8개
+Stage2: 8개
+Stage3: 5개
+Stage4: 6개
+Stage5: 200개
+Stage6: 1개
+
+
+15.3.4 스테이지
+
+스파크 스테이지는 다수의 머신에서 동일한 연산을 수행하는 태스크의 그룹
+1. 가능한 한 많은 태스크(잡의 트랜스포메이션)를 동일한 스테이지로 묶으려 노력
+2. 셔플 작업이 일어난 다음에는 반드시 새로운 스테이지 시작 
+파티션을 재분배하는 과정은 데이터를 이동시키는 작업이므로, 익스큐터 간의 조정이 필요
+
+위 예제에서 처음 스테이지 1과 2는 DataFrame 생성을 위해
+1. range 명령을 사용해 DataFrame을 생성하면 기본적으로 8개의 파티션을 생성
+2. 이 후 파티션 재분배 단계에서는 데이터 셔플링으로 파티션 수 변경
+두 개의 DataFrame은 스테이지 3과 4의 태스크 수에 해당하는 5개, 6개의 파티션으로 재분배됨
+
+스테이지 3과 4는 개별 DataFrame에서 조인(셔플)을 수행
+spark.sql.shuffle.partitions의 default=200 이므로,
+스파크 잡이 실행되는 도중에 셔플을 수행하면 기본적으로 200개의 셔플 파티션을 생성.
+
+경험적으로는 파티션 수 > 클러스터의 익스큐터 수 가 좋다
+
+최종 스테이지에서는 드라이버로 결과를 전송하기 전에 각 파티션 결과를 단일 파티션으로 모으는 작업을 함
+
+
+15.3.5 태스크
+스파크의 스테이지는 태스크로 구성
+하나의 태스크는 
+* 단일 익스큐터에서 실행할 데이터의 블록과 다수의 트랜스포메이션 조합 
+* 데이터 단위(파티션)에 적용되는 연산 단위 
+
+예) 데이터셋이 
+하나의 큰 파티션 -> 1개의 태스크
+1000개의 작은 파티션 -> 1000개의 태스크를 병렬 실행 
+

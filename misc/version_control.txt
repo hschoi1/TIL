@@ -1,0 +1,30 @@
+# summary from https://en.wikipedia.org/wiki/Change_control
+
+change control is a process used to ensure that changes to a product/system are introduced 
+in a controlled and coordinated manner.
+The goals of a change control procedure usually include
+minimal disruption to services, 
+reduction in back-out activities,
+cost-effective utilization of resources involved in implementing change.
+
+
+
+change control can be described as a set of six steps:
+1. plan/scope
+- consider primary/ancillary details of the proposed change.
+2. assess/analyze
+-when executed, will the proposed plan cause smth to go wrong?
+-Even minor details should be considered during this phase.
+-A risk category should be assigned to the proposed change. 
+3. review/approval
+-The plan/scope and impact/risk assessments are considered in the context of business goals, requirements, and resources
+4. build/test
+-If the change control request is approved to move forward, will execute the solution through a small-scale dev process 
+-Through this, design and make incremental changes with unit and/or regression testing
+5. implement
+- should implement the change not only according to the approved plan but also according to org. standards and quality management standards.
+- Following implementation, the team may also carry out a post-implementation review
+6. close
+-determine that the project is actually complete
+-evaluate "the project plan in the context of project completion"
+-provide tangible proof of project success

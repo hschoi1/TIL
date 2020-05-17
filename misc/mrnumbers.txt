@@ -1,0 +1,26 @@
+# summary of https://cwiki.apache.org/confluence/display/HADOOP2/HowManyMapsAndReduces
+
+number of maps 
+The number of maps is driven by the number of DFS blocks in the input files.
+
+mapred.map.tasks parameter is just a hint to the InputFormat for the number of maps.
+In the default case, the DFS block size of the input files is treated as an upper bound for input splits. 
+A lower bound on the split size can be set via mapred.min.split.size 
+ex) 10TB of input data and 128MB DFS blocks -> 82k maps 
+Ultimately the InputFormat determines the number of maps.
+
+number of reducers 
+ideally, the below should be met:
+a multiple of the block size 
+a task time btw 5 and 15 minutes 
+creates the fewest files possible 
+
+if not set properly, affects negatively 
+performance on the next phase of the workflow
+performance due to the shuffle
+overall performance because the namenode is overloaded
+destroying disk IO 
+lots of network transfers due large amts of CFIF/MFIF work
+
+the number of reduces is limited to roughtly 1000 by the buffer size for the output files
+(io.buffer.size * 2 * numReduces << heapSize)

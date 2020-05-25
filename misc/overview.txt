@@ -1,0 +1,73 @@
+some summary points from 
+"A Comprehensive Survey on Graph Neural Networks"
+https://arxiv.org/pdf/1901.00596.pdf by Z. Wu, S. Pan, F. Chen, G. Long & C. Zhang
+
+SOTA graph neural networks into 
+- recurrent graph neural networks
+- convolutional graph neural networks
+- graph autoencoders
+- spatial-temporal graph neural networks
+
+a brief history of GNNs
+* Sperduti et al. (1997): neural networks to directed acyclic graphs 
+* Gori et al. (2005)~ Gallicchio et al. (2010): notion of graph neural networks outlined 
+These fall into RecGNNs:
+* "learn a target node's representation by propagating neighbor information in an iterative manner until 
+a stable fixed point is reached.". 
+* computationally expensive
+
+ConvGNNs are divided into:
+* spectral-based approaches
+Bruna et al.(2013): a graph convolution based on the spectral graph theory
+* spatial-based approached
+Micheli et al(2009): "graph mutual dependency by architecturally composite non-recursive layers
+while inheriting ideas of message passing from RecGNNs"
+
+graph neural networks vs. network embedding
+the former is designed for various tasks whereas the latter covers various kinds of methods targeting the same task.
+
+network embedding
+*represent network nodes as low-dimensional vector representations 
+*preserve both network topology structure and node content information 
+*subsequent task easily performed
+*non-deep learning methods such as matrix factorization and random walks
+
+graph neural networks
+*explicitly extract high-level representations
+*"GNNs can address the network embedding problem through a graph autoencoder framework."
+
+graph neural networks vs. graph kernel methods 
+graph kernel methods 
+*dominant techniques to solve graph classification 
+*employ a kernel function to measure graph similarity
+*kernel-based algorithms such as SVM can be used for supervised learning 
+*embed graphs or nodes into vector spaces by a deterministic(not learnable) mapping function
+*computational bottlenecks
+
+graph neural networks 
+* directly perform graph classifcation based on the extracted graph representations
+* much more efficient than graph kernel methods
+
+
+
+TODO
+
+RecGNNs 
+
+ConvGNNs 
+
+Graph autoencoders (GAEs)
+
+Spatial-temporal GNNs (STGNNs)
+
+
+Frameworks
+*Node-level 
+*Edge-level 
+*Graph-level
+
+Training Frameworks 
+
+*Semi-supervised learning for node-level classification 
+*Supervised learning for graph-level classification 
+*Unsupervised learning for graph embedding

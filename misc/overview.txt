@@ -50,24 +50,52 @@ graph neural networks
 
 
 
-TODO
-
-RecGNNs 
-
-ConvGNNs 
-
-Graph autoencoders (GAEs)
-
-Spatial-temporal GNNs (STGNNs)
-
 
 Frameworks
 *Node-level 
+relate to node regression and node classification tasks
+
 *Edge-level 
+relate to edge classification and link prediction tasks 
+"With two nodes' hidden representations from GNNs as inputs, 
+a similarity function or a neural network can be utilized to predict the label/connection strength of an edge"
+
 *Graph-level
+relate to graph classification task
+often combined with pooling and readout operations
+
 
 Training Frameworks 
 
 *Semi-supervised learning for node-level classification 
+Given a single network with partial nodes labeled and others unlabeled,
+can predict the class labels for the unlabeled nodes 
+
 *Supervised learning for graph-level classification 
+a combination of graph convolutional layers, graph pooling layers, and/or readout layers 
+graph convolutional layers extract high-level node representations,
+graph pooling layers work as down-sampling 
+A readout layer "collapses node representations of each graph into a graph representation"
+
 *Unsupervised learning for graph embedding
+autoencoder framework 
+negative sampling approach which samples a portion of node pairs as negative pairs (existing pairs are positive pairs)
+Then a logistic regression layer is applied to distinguish between positive and negative pairs
+
+
+
+
+*RecGNNs 
+GNN (by Scarselli et al.) updates nodes' states by exchanging neighborhood information recurrently
+until a stable equilibrium is reached.
+eq (1) 
+The sum makes GNN applicable to the cases where the number of neighbors differs and no neighborhood ordering is known
+If f is a neural network, a penalty term has to be imposed on the Jacobian matrix
+GNN alternates node state propagation and parameter gradient computation
+TODO
+
+*ConvGNNs 
+
+*Graph autoencoders (GAEs)
+
+*Spatial-temporal GNNs (STGNNs)

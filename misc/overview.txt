@@ -92,10 +92,75 @@ eq (1)
 The sum makes GNN applicable to the cases where the number of neighbors differs and no neighborhood ordering is known
 If f is a neural network, a penalty term has to be imposed on the Jacobian matrix
 GNN alternates node state propagation and parameter gradient computation
-TODO
+
 
 *ConvGNNs 
+A. Spectral-based ConvGNNs
+An undirected graph is represented by the normalized graph Laplacian matrix
+since real symmetric positive semidefinite, it can be factored as L = UAUt
+The graph Fourier transform to a signal x: F(x) = Utx
+Due to the eigen-decomposition of the Laplacian matrix, 
+(1) "any perturbation to a graph results in a change of eigenbasis"
+(2) "the learned filters are domain dependent"
+(3) eigen-decomposition is computationally expensive: O(n^3)
+
+Chebyshev Spectral CNN approxiates the filter by Chebyshev polynomials of the diagonal matrix
+filters defined by ChebNet are localized in space
+CayleyNet applies Cayley polynomials to capture narrow frequency bands
+GCN uses a first-order approx. of ChebNet 
+"Adaptive GCN learns hidden structural relations unspecified by the graph adjacency matrix"
+
+B.Spatial-based ConvGNNs 
+
+
 
 *Graph autoencoders (GAEs)
 
+network embedding
+early approaches: mlp to build GAEs  
+Deep Nueral Network for Graph Representations(DNGR): a stacked denoising autoencoder to encode/decode PPMI matrix via mlp 
+Structural Deep Network Embedding(SDNE): a stacked autoencdoer to preserve the node first-order proximity and second-order proximity jointly
+DNGR and SDNE  only consider node structural info such as connectivity
+
+
+
 *Spatial-temporal GNNs (STGNNs)
+
+
+*Applications
+
+4 main datasets: citation networks, biochemical graphs, social networks, and others
+evaluation:
+node classification:
+mostly average accuracy or F1 score. 
+but, same train/valid/test split throughout all experiments underestimates generalization error.
+hyper-parameter tuning, parameter initialization, learning rate decay, and early stopping not unified across models
+
+graph classification:
+often 10-fold cross validation
+but, experimental settings are ambiguous and not unified
+alternative: use an external k fold cv for model assessment and an inner k fold cv for model selection
+
+Practical Applications
+computer vision: scene graph generation, point clouds classification, and action recognition
+recognizing semantic relationships 
+
+nlp: text classification
+utilizes inter-relations of documents or words to label documents
+nl data may contain an interal graph structure such as a syntatic dependency tree
+
+traffic prediction 
+consider traffic network as a spatial-temporal graph where
+nodes : sensors on roads,
+edges : distance between pairs of nodes
+each node has average traffic speed within a window
+
+Recommender systems
+nodes: items and users
+items and items, users and users, users and items + content info 
+recommentation as a link prediction to predict missing links between users and items 
+https://arxiv.org/pdf/1806.01973.pdf
+
+Future Directions
+model depth: Li et al. show that performance of a ConvGNN drops dramatically as the # of graph conv. layers increases
+scalability, heterogenity, dynamicity

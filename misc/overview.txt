@@ -113,10 +113,51 @@ GCN uses a first-order approx. of ChebNet
 B.Spatial-based ConvGNNs 
 
 
+NN4G 
+learns graph mutual dependency thru a compositional neural architecture
+sums a node's neighbordhood info directly
+use residual connections and skip connections 
+one difference from GCN: NN4G uses the unnormalized adj. matrix which may cause hidden node states to have different scales
+
+Diffusion Convolution Neural Network (DCNN) 
+graph convolutions as a diffusion process 
+info. is transferred from one node to one of its neighboring nodes with a certain transition probability 
+info. distribution reaches equilibrium after several rounds
+
+Diffusion Graph Convolution (DGC)
+
+Partition Graph Convolution (PGC)
+partitions a node's neighbors into Q groups based on certain criteria
+constructs Q adj. matrices then applies GCN with a different param. matrix to each neighbor group and sums the results 
+
+Message Passing Neural Network (MPNN)
+treats graph convolutions as a message passing process
+
+Graph Isomorphism Network (GIN)
+GIN is capable of distinguishing different graph structures based on the graph embedding.
+
+GraphSage 
+samples to obtain a fixed # of neighbors for each node. 
+
+Graph Attention Network (GAT)
+adopts attention to learn the relative weights btw two connected nodes.
+performs multi-head attention
+
+Mixture Model Network (MoNet)
+use ode pseudo-coordinates to determine the relative position between a node and its neighbor
+then map the relative position to the relative weight between the two nodes
+
+Comparison btw spectral and spatial models
+
+
+C. Graph Pooling Modules
+
+
+
 
 *Graph autoencoders (GAEs)
 
-network embedding
+A.network embedding
 early approaches: mlp to build GAEs  
 Deep Nueral Network for Graph Representations(DNGR): a stacked denoising autoencoder to encode/decode PPMI matrix via mlp 
 Structural Deep Network Embedding(SDNE): a stacked autoencdoer to preserve the node first-order proximity and second-order proximity jointly
@@ -124,7 +165,17 @@ DNGR and SDNE  only consider node structural info such as connectivity
 
 
 
+
 *Spatial-temporal GNNs (STGNNs)
+
+aims to model the dynamic node inputs while assuming interdependency btw connected nodes.
+"Most RNN-based approaches capture spatial-temporal dep. by filtering inputs and hidden states passed 
+to a recurrent unit using graph conv.
+
+
+
+
+
 
 
 *Applications

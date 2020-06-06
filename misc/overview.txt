@@ -149,8 +149,34 @@ then map the relative position to the relative weight between the two nodes
 
 Comparison btw spectral and spatial models
 
+Spatial models are preferred over spectral models due to more efficiency, generality, and flexibility.
+Spectral models vs Spatial models
+compute eigenvectors or handle the whole graph  vs convolutions via info. propagation in a batch of nodes.
+generalize poorly to new graphs vs convolutions locally on each node with shared weights 
+only on undirected graphs vs flexible graph inputs(easily aggregated by aggregation function): multi-source graph inputs (e.g edge inputs), directed graphs, signed graphs, and heterogenous graphs 
 
 C. Graph Pooling Modules
+
+(1) reduce the size of parameters by down-sampling 
+generate smaller representations and avoid overfitting, permutation invariance, 
+and computational complexity
+(2) readout operation to generate graph-level representation base don node representations.
+
+
+graph coarsening algorithms
+eigen-decomposition to coarsen graphs -> high time complexity
+nowdays, mean/max/sum pooling 
+Henaff et al. show that a max/mean pooling at the beginning reduces the dim. 
+and mitigate the cost of the expensvie graph Gourier transform operation 
+
+
+D. Discussion of Theoretical Aspects
+shape of receptive field
+VC dimension 
+Graph Isomorphism 
+Xu et al. prove that 
+if a GNN maps G1 and G2 to different embeddings,they can be regarded as non-isomorphic by the WL test of isomorphism
+common GNNs such as GCN and GraphSage incapable of distinguishing different graph structures.
 
 
 

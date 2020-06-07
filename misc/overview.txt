@@ -171,13 +171,25 @@ and mitigate the cost of the expensvie graph Gourier transform operation
 
 
 D. Discussion of Theoretical Aspects
-shape of receptive field
-VC dimension 
-Graph Isomorphism 
+*shape of receptive field
+when compositing multiple spatial graph conv layers, the receptive field of a node grows one step farther.
+
+*VC dimension 
+VC dim of a GNN is O(p^4* n^2) or O(p^2* n), p: # of model params, n: # of nodes 
+
+*Graph Isomorphism 
 Xu et al. prove that 
 if a GNN maps G1 and G2 to different embeddings,they can be regarded as non-isomorphic by the WL test of isomorphism
 common GNNs such as GCN and GraphSage incapable of distinguishing different graph structures.
+if aggregation and readout fcts are injective, the GNN is as powerful as WL test
 
+*Equivariance and invariance 
+A GNN must be equivariant in node-level tasks and invarianct in graph-level tasks
+Components of a GNN must be invariant to node orderings.
+
+Universal approximation
+RecGNN can approximate any fct that preserves unfolding equivalence
+ConvGNNs under the framework of message passing are not universal approximators of continuous functions 
 
 
 
@@ -189,7 +201,17 @@ Deep Nueral Network for Graph Representations(DNGR): a stacked denoising autoenc
 Structural Deep Network Embedding(SDNE): a stacked autoencdoer to preserve the node first-order proximity and second-order proximity jointly
 DNGR and SDNE  only consider node structural info such as connectivity
 
+For graphs, # of positive node pairs << # of negative node pairs.
+Convert a graph into sequences by random permutations or random walks -> deep learning approaches applicable to sequences can be used 
+DRNE implicity learns network embeddings via  LSTM. to aggregate a node's neighbors.
+avoids the problem that LSTM is variant to the permutation of node sequences.
 
+NetRa has LSTMs as the encoder and the decoder.
+but it ignores the node permutation variant problem of LSTM 
+
+
+B. Graph Generation 
+skip
 
 
 *Spatial-temporal GNNs (STGNNs)
@@ -198,10 +220,29 @@ aims to model the dynamic node inputs while assuming interdependency btw connect
 "Most RNN-based approaches capture spatial-temporal dep. by filtering inputs and hidden states passed 
 to a recurrent unit using graph conv.
 
+GCRN: LSTM with ChebNet. 
+DCRNN: diffusion graph convolutional layer into a GRU network
+
+Structural-RNN: a node-RNN and an edge-RNN
+edge-RNNs outputs as inputs to node-RNN 
+high model complexity because different RNNs for different nodes and edges 
+
+RNN-based issues: time-consuming iterative propagation and gradient explosion/vanishing.
+
+CNN-based approaches:
+1D-CNN layers to learn temporal dependencies and graph conv. layers and spatial dependencies
+
+CGCN: 1D-CNN layers with ChebNet or GCN layers 
+
+Learning latent static spatial dependencies
+interpretable and stable correlations among different entities in a network
+"Graph WaveNet proposes a self-adaptive adjacency matrix to perform graph convolutions"
 
 
-
-
+latent dynamic spatial dependencies 
+GaAN: employs an attention fct to update the edge weight btw two connected nodes given their crruent inputs.
+ASTGCN: spatial attention fct and a temporal attention fct 
+but learning latent spatial dependencies results in high time complexity: O(n^2)
 
 
 *Applications

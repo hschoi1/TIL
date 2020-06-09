@@ -50,7 +50,6 @@ graph neural networks
 
 
 
-
 Frameworks
 *Node-level 
 relate to node regression and node classification tasks
@@ -92,6 +91,25 @@ eq (1)
 The sum makes GNN applicable to the cases where the number of neighbors differs and no neighborhood ordering is known
 If f is a neural network, a penalty term has to be imposed on the Jacobian matrix
 GNN alternates node state propagation and parameter gradient computation
+This way, GNN can handle cyclic graphs
+
+Graph ESN 
+an encoder and an output layer. The encoder doesn't require training 
+a contractive state transition fct to recurrently update node states 
+afterwards, the output layer is trained by taking the fixed node states as inputs
+
+GGNN 
+uses GRU as a recurrent function
+uses back-propagation through time(BPTT) algorithm to learn the parameters
+runs recurrent function multiple times over all nodes. requires the intermediate states of all nodes to be stored in memory
+-> not scalable
+
+Stochastic Steady-state Embedding(SSE) 
+"updates node hidden states recurrently in a stochastic and asynchronous fashion"
+reccurent function is a weighted avg of the historical states and new states.
+
+
+
 
 
 *ConvGNNs 
